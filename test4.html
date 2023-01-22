@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Ticket Generator</title>
+  <!-- include the QRcode.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.js"></script>
+  <!-- include the html2canvas library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-alpha1/html2canvas.min.js"></script>
+  <!-- style the ticket -->
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: sans-serif;
+      font-size: 12px;
+      font-family: 'Poppins', sans-serif;
+      background-color: #B7B5E4;
+    }
+
+    /* Main Ticket Style */
+    .ticketContainer {
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      image-rendering: crisp-edges;
+    }
+
+    .ticket {
+      display: flex;
+      flex-direction: column;
+      animation: bouncingCard 0.6s ease-out infinite alternate;
+      background-color: white;
+      color: darkslategray;
+      border-radius: 12px;
+    }
+
+    .ticketShadow {
+      animation: bouncingShadow 0.6s ease-out infinite alternate;
+      margin-top: 4px;
+      width: 95%;
+      height: 12px;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.4);
+      filter: blur(12px);
+    }
+
+    /* Ticket Content */
+    .ticketTitle {
+      font-size: 1.5rem;
+      font-weight: 700;
+      padding: 12px 16px 4px;
+    }
+
+    hr {
+      width: 90%;
+      border: 1px solid #efefef;
+    }
+
+    .ticketDetail {
+      font-size: 1.1rem;
+      font-weight: 500;
+      padding: 4px 16px;
+    }
+
+    .ticketSubDetail {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1rem;
+      padding: 12px 16px;
+    }
+
+    .ticketSubDetail .code {
+      margin-right: 24px;
+    }
+
+    /* Ticket Ripper */
+    .ticketRip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .circleLeft {
+      width: 12px;
+      height: 24px;
+      background-color: #B7B5E4;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .ripLine {
+      width: 100%;
+      border-top: 3px solid #B7B5E4;
+      border-top-style: dashed;
+    }
+
+    .circleRight {
+      width: 12px;
+      height: 24px;
+      background-color: #B7B5E4;
+      border-radius: 12px 0 0 12px;
+    }
+
+    /* Ticket Bouncing Animation */
+    @keyframes bouncingCard {
+      from {
+        transform: translateY(0);
+      }
+
+      to {
+        transform: translateY(-18px);
+      }
+    }
+
+    @keyframes bouncingShadow {
+      from {
+        transform: translateY(0px);
+      }
+
+      to {
+        transform: translateY(4px);
+      }
+    }
+
+    #qr-code {
+      padding-top: 30px;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+
+</head>
+
+<body>
+  <!-- create a container for the ticket -->
+  <div class="ticketContainer">
+    <div class="ticket">
+      <div class="ticketTitle">Dharwad Regional Science Center </div>
+      <hr>
+      <div class="ticketDetail">
+        <div>Movie:&ensp; Kong VS Goatzilla</div>
+        <div>Studio:&nbsp; 5</div>
+        <div>Time:&emsp; 19:20</div>
+        <div id="qr-code"></div>
+      </div>
+      <div class="ticketRip">
+        <div class="circleLeft"></div>
+        <div class="ripLine"></div>
+        <div class="circleRight"></div>
+      </div>
+      <div class="ticketSubDetail">
+        <div class="code">LO-2314XXX</div>
+        <div class="date"> Jan 14<sup>th</sup> 2023</div>
+      </div>
+    </div>
+    <div class="ticketShadow"></div>
+    <div class="ticketbuttons">
+      <button id="download-ticket">Download Ticket</button>
+      <button id="Homepage"><a href="index.php">Homepage</a></button>
+
+    </div>
+  </div>
+  </div>
+  <!-- create a container for the QR code -->
+
+  <script>
+    // generate a unique QR code for each ticket
+    // create a Set to store used numbers
+const usedNumbers = new Set();
+
+// function to generate a unique number
+function generateUniqueNumber() {
+  let uniqueNumber;
+  do {
+    uniqueNumber = Math.floor(Math.random() * 10000000000);
+  } while (usedNumbers.has(uniqueNumber));
+  usedNumbers.add(uniqueNumber);
+  return uniqueNumber;
+}
+// generate the unique number
+const uniqueNumber = generateUniqueNumber();
+
+    // create the QR code using QRcode.js
+    new QRCode(document.getElementById("qr-code"), {
+      text: uniqueNumber,
+      width: 100,
+      height: 100,
+    });
+
+    // convert the ticket HTML to an image using html2canvas
+    const ticketElement = document.querySelector(".ticket");
+    const canvasOptions = {
+      width: 1080,
+      height: 1920
+    };
+
+      // create an image element with the ticket image
+      const downloadButton = document.querySelector("#download-ticket");
+downloadButton.addEventListener("click", function() {
+    const ticketElement = document.querySelector(".ticket");
+    html2canvas(ticketElement,canvasOptions).then(canvas => {
+        // create an image element with the ticket image
+        const img = new Image();
+        img.src = canvas.toDataURL("image/png");
+
+        // download the ticket image
+        const ticketFilename = "ticket.png";
+        img.onload = function () {
+            const link = document.createElement("a");
+            link.download = ticketFilename;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        };
+    });
+});
+
+    </script>
+<div class="wrapper">
+  <input type="hidden" name="token_tickets" value="e99ed777141f1630486953cb67e2556261185407d011b4ec9206a65142ea1198">
+  <div id="features-section">
+    <div class="feature-container">
+      <div class="selectbox gt-border-color-second gt-font-color-second gt-border-radius" id="language-selection">
+        <span class="icon triangle-down gt-font-color-fourth"></span>
+        <select class="gt-font-color-second gt-desktop-select" id="ui-id-1" style="display: none;">
+          <option data-url="/nl/hof/tickets">NL</option>
+          <option selected="selected" data-url="/en/hof/tickets">EN</option>
+        </select><span tabindex="0" id="ui-id-1-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="ui-id-1-menu" aria-haspopup="true" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">EN</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="section-container main">
+<div class="section gt-border-color-second gt-border-radius" id="navigation-bar-section">
+<ul class="nav-bar small gt-background-third gt-border-color-second gt-border-color-none">
+    
+        
+    
+<li class="active ">
+<a href="/en/hof/tickets" class="gt-background-second gt-border-color-second gt-font-family-second" tabindex="-1">
+  <span class="number">1</span><span class="step">. Tickets</span>
+</a>
+</li>
+        
+    
+<li class=" ">
+<a href="/en/hof/date" class="gt-font-family-second gt-font-color-fifth" tabindex="-1">
+  <span class="number">2</span><span class="step">. Date selection</span>
+</a>
+</li>
+        
+    
+<li class=" ">
+<a href="/en/hof/personal-details" class="gt-font-family-second gt-font-color-fifth" tabindex="-1">
+  <span class="number">3</span><span class="step">. Personal details</span>
+</a>
+</li>
+        
+    
+<li class=" ">
+<a href="/en/hof/donation" class="gt-font-family-second gt-font-color-fifth" tabindex="-1">
+  <span class="number">4</span><span class="step">. Donation</span>
+</a>
+</li>
+        
+    
+<li class=" ">
+<a href="/en/hof/payment" class="gt-font-family-second gt-font-color-fifth" tabindex="-1">
+  <span class="number">5</span><span class="step">. Payment</span>
+</a>
+</li>
+</ul>
+</div>
+    <div class="section text-container" id="introduction-section">
+      <h1 class="gt-font-family-second gt-font-color-second"><span>Let's meet at Frans Hals Museum!</span></h1>
+      <p>HOF location on Groot Heiligland is temporarily closed for construction work on the entrance and shop. From 14 February we will be able to provide an improved visitor experience at Groot Heiligland.&nbsp;</p> <p>Meanwhile, our HAL location on Grote Markt remains open. Visit <em>The Rhythm of the Night</em> at our HAL location on Grote Markt, Wednesday to Sunday from 11 January to 12 February for half price.</p>						</div>
+
+    <div class="section required" id="tickets-section">
+      <div class="text-container">
+      </div>
+
+      <ul class="row-container gt-background-third gt-font-color-third gt-font-size-second">
+        <li class="top-row gt-font-family-second">
+          <div class="col-container">
+            <div class="col type">
+              <span>Select your tickets</span>
+            </div>
+            <div class="col price">
+              <span>Price</span>
+            </div>
+            <div class="col number">
+              <span>Quantity</span>
+            </div>
+            <div class="col subtotal">
+              <span>Subtotal</span>
+            </div>
+          </div>
+        </li>
+        <li class="event-title">
+          <div class="title">Entrance tickets Hof location</div>
+          <div class="date"></div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - Adults</span>
+              <span class="mobile price">€16.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€16.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[309422]" data-price="16" class="selectmenu gt-desktop-select" id="tickettype_309422" data-event="3956" title="Hof - Adults" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_309422-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_309422-menu" aria-haspopup="true" title="Hof - Adults" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - Under 19</span>
+              <span class="mobile price">€0.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€0.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[309425]" data-price="0" class="selectmenu gt-desktop-select" id="tickettype_309425" data-event="3956" title="Hof - Under 19" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_309425-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_309425-menu" aria-haspopup="true" title="Hof - Under 19" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - 19 to 24 years old</span>
+              <span class="mobile price">€8.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€8.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[389697]" data-price="8" class="selectmenu gt-desktop-select" id="tickettype_389697" data-event="3956" title="Hof - 19 to 24 years old" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_389697-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_389697-menu" aria-haspopup="true" title="Hof - 19 to 24 years old" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - CJP</span>
+              <span class="mobile price">€8.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€8.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[309428]" data-price="8" class="selectmenu gt-desktop-select" id="tickettype_309428" data-event="3956" title="Hof - CJP" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_309428-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_309428-menu" aria-haspopup="true" title="Hof - CJP" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - Museumkaart</span>
+              <span class="mobile price">€0.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€0.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[309434]" data-price="0" class="selectmenu gt-desktop-select" id="tickettype_309434" data-event="3956" title="Hof - Museumkaart" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_309434-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_309434-menu" aria-haspopup="true" title="Hof - Museumkaart" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - Vrienden/ Beminnaers / Roemers</span>
+              <span class="mobile price">€0.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€0.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[309437]" data-price="0" class="selectmenu gt-desktop-select" id="tickettype_309437" data-event="3956" title="Hof - Vrienden/ Beminnaers / Roemers" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_309437-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_309437-menu" aria-haspopup="true" title="Hof - Vrienden/ Beminnaers / Roemers" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - VriendenLoterij VIP-KAART</span>
+              <span class="mobile price">€0.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€0.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[309440]" data-price="0" class="selectmenu gt-desktop-select" id="tickettype_309440" data-event="3956" title="Hof - VriendenLoterij VIP-KAART" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_309440-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_309440-menu" aria-haspopup="true" title="Hof - VriendenLoterij VIP-KAART" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - Other valid admission ticket <a href="#" class="gt-font-color-fourth"><span class="icon info-circle"></span></a></span>
+              <span class="mobile price">€0.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€0.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[309443]" data-price="0" class="selectmenu gt-desktop-select" id="tickettype_309443" data-event="3956" title="Hof - Other valid admission ticket" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_309443-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_309443-menu" aria-haspopup="true" title="Hof - Other valid admission ticket" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+          <div class="description">
+            <p>If you are in possession of a Haarlem Pass, a member of Vereniging Rembrandt, a ICOM pass or iAmsterdam City Card, you can select this ticket.</p>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - Attendant</span>
+              <span class="mobile price">€0.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€0.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[328415]" data-price="0" class="selectmenu gt-desktop-select" id="tickettype_328415" data-event="3956" title="Hof - Attendant" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                </select><span tabindex="0" id="tickettype_328415-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_328415-menu" aria-haspopup="true" title="Hof - Attendant" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span>Hof - Group</span>
+              <span class="mobile price">€13.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€13.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[353177]" data-price="13" class="selectmenu gt-desktop-select" id="tickettype_353177" data-event="3956" title="Hof - Group" style="display: none;">
+                  <option>0</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_353177-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_353177-menu" aria-haspopup="true" title="Hof - Group" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span></span>
+              <span class="mobile price">€0.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€0.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[385792]" data-price="0" class="selectmenu gt-desktop-select" id="tickettype_385792" data-event="3956" title="" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                  <option>7</option>
+                  <option>8</option>
+                  <option>9</option>
+                  <option>10</option>
+                  <option>11</option>
+                  <option>12</option>
+                  <option>13</option>
+                  <option>14</option>
+                  <option>15</option>
+                </select><span tabindex="0" id="tickettype_385792-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_385792-menu" aria-haspopup="true" title="" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="row">
+          <div class="col-container">
+            <div class="col type">
+              <span></span>
+              <span class="mobile price">€8.00</span>
+            </div>
+            <div class="col price">
+              <span class="strong value">€8.00</span>
+            </div>
+            <div class="col number">
+              <div class="selectbox gt-border-color-second gt-border-radius">
+                <span class="icon triangle-down gt-font-color-fourth"></span>
+                <select name="tickets[385818]" data-price="8" class="selectmenu gt-desktop-select" id="tickettype_385818" data-event="3956" title="" style="display: none;">
+                  <option>0</option>
+                  <option>1</option>
+                </select><span tabindex="0" id="tickettype_385818-button" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-owns="tickettype_385818-menu" aria-haspopup="true" title="" class="ui-selectmenu-button ui-selectmenu-button-closed ui-corner-all ui-button ui-widget" style="width: 100%;"><span class="ui-selectmenu-icon ui-icon ui-icon-triangle-1-s"></span><span class="ui-selectmenu-text">0</span></span>
+              </div>
+            </div>
+            <div class="col subtotal">
+              <span></span>
+            </div>
+          </div>
+        </li>
+        <li class="subtotal-price gt-border-color-second" style="">
+          <span>Subtotal:</span>
+          <span id="subtotal-price">€0.00</span>
+        </li>
+        <li class="discount" style="">
+          <a href="#" id="code-button" class="gt-font-color-fourth"><span>I have a discount code</span><span class="icon arrow-right"></span></a>
+
+          <div class="error-container" id="discount-error">
+            <span>Your (discount) code is invalid. Make sure the code is entered correctly.
+<br>
+<br>
+If you have entered the code before without completing the order, the code will be invalid for 15 minutes. Please try again after 15 minutes.</span>
+          </div>
+
+          <div class="code-container">
+            <label for="input-code">Enter your discount code here</label>
+
+            <div class="wrap">
+              <div class="cell">
+                <input type="text" name="discountCode" id="input-code" class="gt-border-radius" value="">
+              </div>
+              <div class="cell">
+                <button type="submit" class="button gt-background-second gt-border-radius gt-font-family-second" id="submit-input-code">
+                  <span class="main">Check</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="discount-container" style="">
+            <span class="discount-name"><span>Discount code: </span><span class="discount-id"></span></span>
+            <span class="discount-val">- €0.00</span>
+          </div>
+        </li>
+        <li class="last-row gt-border-color-second">
+          <span>Total price</span>
+          <span class="total-price"></span>
+        </li>
+      </ul>
+    </div>
+
+
+    <div class="section" id="button-steps">
+                    <div class="background gt-background-main gt-border-color-second"></div>
+                    <div class="wrap">
+                        <div class="inner-wrap">
+                            <button type="submit" class="next button gt-border-radius gt-background-second gt-font-family-second" disabled="">
+                                                                        <span>Next<span class="desktop"> step</span></span>                                        <span class="icon arrow-head-right"></span>                                    </button>
+                        </div>
+                    </div>
+    </div>
+  </div>
+<!-- Sidebar -->
+<div class="section-container sidebar">
+  <div class="section text-container first gt-border-radius">
+    <h3 class="gt-font-color-second gt-font-family-second">Important information</h3>
+    <p>Location HAL is open from Wednesday to Sunday during <em>The Rhythm of the Night</em>.</p>					</div>
+  <div class="section text-container second gt-border-radius gt-border-color-second">
+    <h3 class="gt-font-color-second gt-font-family-second">Questions?</h3>
+    <p>Do you have questions about your ticket? Please contact <a href="mailto:ticketsupport@cm.com?subject=Frans%20Hals%20Museum%20ticket%20support" class="gt-font-color-fourth email-link">ticketsupport@cm.com</a></p>					</div>
+            <a target="_blank" href="/en/ticketsupport" id="main-support-button" class="button gt-border-color-second gt-border-radius gt-font-color-fourth open-support-page-tag">
+                <span class="icon support left"></span>
+                <span>Ticket support</span>
+                <span class="icon triangle-right right"></span>
+            </a>
+</div>
+</div>
+      
+
+</body>
+
+</html>
